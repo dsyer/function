@@ -39,15 +39,16 @@ import static org.junit.Assert.assertThat;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = FunctionAppConfiguration.class, webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @TestPropertySource(properties = {
-		"function.location=file:target/it/support/target/function-sample-1.0.0.M1.jar", })
-public abstract class FunctionAppConfigurationTests {
+		"function.location=file:target/it/support/target/function-sample-1.0.0.M1-exec.jar", })
+public abstract class SpringFunctionAppConfigurationTests {
 
 	@Autowired
 	protected MessageCollector messageCollector;
 
 	@EnableAutoConfiguration
-	@TestPropertySource(properties = { "function.bean=com.example.functions.Emitter" })
-	public static class SourceTests extends FunctionAppConfigurationTests {
+	@TestPropertySource(properties = { "function.bean=myEmitter",
+			"function.main=com.example.functions.FunctionApp" })
+	public static class SourceTests extends SpringFunctionAppConfigurationTests {
 
 		@Autowired
 		private Source source;
@@ -64,9 +65,9 @@ public abstract class FunctionAppConfigurationTests {
 	}
 
 	@EnableAutoConfiguration
-	@TestPropertySource(properties = {
-			"function.bean=com.example.functions.LengthCounter" })
-	public static class ProcessorTests extends FunctionAppConfigurationTests {
+	@TestPropertySource(properties = { "function.bean=myCounter",
+			"function.main=com.example.functions.FunctionApp" })
+	public static class ProcessorTests extends SpringFunctionAppConfigurationTests {
 
 		@Autowired
 		private Processor processor;
@@ -83,9 +84,9 @@ public abstract class FunctionAppConfigurationTests {
 	}
 
 	@EnableAutoConfiguration
-	@TestPropertySource(properties = {
-			"function.bean=com.example.functions.DoubleLogger" })
-	public static class SinkTests extends FunctionAppConfigurationTests {
+	@TestPropertySource(properties = { "function.bean=myDoubler",
+			"function.main=com.example.functions.FunctionApp" })
+	public static class SinkTests extends SpringFunctionAppConfigurationTests {
 
 		@Autowired
 		private Sink sink;

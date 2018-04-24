@@ -34,17 +34,23 @@ public class FunctionProperties {
 	private String[] location;
 
 	/**
-	 * The fully qualified class name of the supplier/function/consumer to run.
+	 * The bean name or fully qualified class name of the supplier/function/consumer to
+	 * run.
 	 */
 	@NotBlank
-	private String className;
+	private String bean;
 
-	public String getClassName() {
-		return className;
+	/**
+	 * Optional main class from which to build a Spring application context
+	 */
+	private String main;
+
+	public String getBean() {
+		return bean;
 	}
 
-	public void setClassName(String className) {
-		this.className = className;
+	public void setBean(String bean) {
+		this.bean = bean;
 	}
 
 	public String[] getLocation() {
@@ -53,5 +59,13 @@ public class FunctionProperties {
 
 	public void setLocation(String[] location) {
 		this.location = location;
+	}
+
+	public String getMain() {
+		return main;
+	}
+
+	public void setMain(String main) {
+		this.main = main;
 	}
 }
