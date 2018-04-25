@@ -16,9 +16,10 @@
 
 package org.springframework.cloud.stream.app.function.app;
 
+import org.springframework.cloud.function.deployer.EnableFunctionDeployer;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-// Only needed because of a naming convention in the apps maven plugin
+@EnableFunctionDeployer
 public class FunctionAppConfiguration {
 }
