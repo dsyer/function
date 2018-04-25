@@ -65,6 +65,25 @@ public abstract class SpringFunctionAppConfigurationTests {
 	}
 
 	@EnableAutoConfiguration
+	@TestPropertySource(properties = { "function.bean=myEmitter,myCounter",
+			"function.main=com.example.functions.FunctionApp" })
+	public static class CompositeTests extends SpringFunctionAppConfigurationTests {
+
+		@Autowired
+		private Source source;
+
+		@Test
+		public void test() throws Exception {
+
+			Message<?> received = messageCollector.forChannel(source.output()).poll(2,
+					TimeUnit.SECONDS);
+			assertThat(received.getPayload(), Matchers.is(3));
+
+		}
+
+	}
+
+	@EnableAutoConfiguration
 	@TestPropertySource(properties = { "function.bean=myCounter",
 			"function.main=com.example.functions.FunctionApp" })
 	public static class ProcessorTests extends SpringFunctionAppConfigurationTests {

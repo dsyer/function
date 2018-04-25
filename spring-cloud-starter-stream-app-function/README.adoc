@@ -17,8 +17,10 @@ Depends on the actual concrete type of the functional class used at runtime.
 The **$$function-app$$** application has the following options:
 
 //tag::configuration-properties[]
-$$function.class-name$$:: $$The fully qualified class name of the supplier/function/consumer to run.$$ *($$String$$, default: `$$<none>$$`)*
+$$function.bean$$:: $$The bean name or fully qualified class name of the supplier/function/consumer to
+ run.$$ *($$String$$, default: `$$<none>$$`)*
 $$function.location$$:: $$Location(s) of jar archives containing the supplier/function/consumer class to run.$$ *($$String[]$$, default: `$$<none>$$`)*
+$$function.main$$:: $$Optional main class from which to build a Spring application context$$ *($$String$$, default: `$$<none>$$`)*
 //end::configuration-properties[]
 
 //end::ref-doc[]

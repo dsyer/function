@@ -65,6 +65,25 @@ public abstract class FunctionAppConfigurationTests {
 
 	@EnableAutoConfiguration
 	@TestPropertySource(properties = {
+			"function.bean=com.example.functions.Emitter,com.example.functions.LengthCounter" })
+	public static class CompositeTests extends FunctionAppConfigurationTests {
+
+		@Autowired
+		private Source source;
+
+		@Test
+		public void test() throws Exception {
+
+			Message<?> received = messageCollector.forChannel(source.output()).poll(2,
+					TimeUnit.SECONDS);
+			assertThat(received.getPayload(), Matchers.is(3));
+
+		}
+
+	}
+
+	@EnableAutoConfiguration
+	@TestPropertySource(properties = {
 			"function.bean=com.example.functions.LengthCounter" })
 	public static class ProcessorTests extends FunctionAppConfigurationTests {
 

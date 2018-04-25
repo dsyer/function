@@ -28,7 +28,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -38,8 +41,10 @@ import javax.annotation.PreDestroy;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -58,6 +63,7 @@ import org.springframework.cloud.function.context.catalog.FunctionInspector;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StreamUtils;
@@ -133,7 +139,15 @@ public class FunctionAppConfiguration {
 		try {
 			this.creator = new BeanCreator(expand(urls));
 			this.creator.run(properties.getMain());
-			this.creator.register(this.creator.create(properties.getBean()));
+			Arrays.stream(properties.getBean()).map(this.creator::create).sequential()
+					.forEach(this.creator::register);
+			if (properties.getName().contains("|")) {
+				// A composite function has to be explicitly registered before it is
+				// looked up because we are using the SingleEntryFunctionRegistry
+				this.registry.lookup(Consumer.class, properties.getName());
+				this.registry.lookup(Function.class, properties.getName());
+				this.registry.lookup(Supplier.class, properties.getName());
+			}
 		}
 		catch (Exception e) {
 			throw new IllegalStateException("Cannot create functions", e);
@@ -228,6 +242,8 @@ public class FunctionAppConfiguration {
 	 */
 	private class BeanCreator {
 
+		private AtomicInteger counter = new AtomicInteger(0);
+
 		private ApplicationRunner runner;
 
 		public BeanCreator(URL[] urls) {
@@ -296,7 +312,8 @@ public class FunctionAppConfiguration {
 				return;
 			}
 			FunctionRegistration<Object> registration = new FunctionRegistration<Object>(
-					bean).names("function-bean");
+					bean).names(
+							FunctionProperties.functionName(counter.getAndIncrement()));
 			if (this.runner != null) {
 				if (this.runner.containsBean(FunctionInspector.class.getName())) {
 					Object inspector = this.runner
@@ -374,5 +391,30 @@ public class FunctionAppConfiguration {
 				throw e;
 			}
 		}
+	}
+
+	@Configuration
+	protected static class SingleEntryConfiguration implements BeanPostProcessor {
+
+		@Autowired
+		private Environment env;
+
+		@Override
+		public Object postProcessBeforeInitialization(Object bean, String beanName)
+				throws BeansException {
+			return bean;
+		}
+
+		@Override
+		public Object postProcessAfterInitialization(Object bean, String beanName)
+				throws BeansException {
+			String name = FunctionProperties
+					.functionName(env.getProperty("function.bean", ""));
+			if (bean instanceof FunctionRegistry && name.contains("|")) {
+				bean = new SingleEntryFunctionRegistry((FunctionRegistry) bean, name);
+			}
+			return bean;
+		}
+
 	}
 }

@@ -16,9 +16,12 @@
 
 package org.springframework.cloud.stream.app.function.app;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.validation.constraints.Size;
 
-import org.hibernate.validator.constraints.NotBlank;
+import org.springframework.util.StringUtils;
 
 /**
  * Configuration properties for deciding how to locate the functional class to execute.
@@ -37,19 +40,23 @@ public class FunctionProperties {
 	 * The bean name or fully qualified class name of the supplier/function/consumer to
 	 * run.
 	 */
-	@NotBlank
-	private String bean;
+	@Size(min = 1)
+	private String[] bean;
 
 	/**
 	 * Optional main class from which to build a Spring application context
 	 */
 	private String main;
 
-	public String getBean() {
+	public String getName() {
+		return functionName(StringUtils.arrayToDelimitedString(bean, ","));
+	}
+
+	public String[] getBean() {
 		return bean;
 	}
 
-	public void setBean(String bean) {
+	public void setBean(String[] bean) {
 		this.bean = bean;
 	}
 
@@ -67,5 +74,20 @@ public class FunctionProperties {
 
 	public void setMain(String main) {
 		this.main = main;
+	}
+
+	public static String functionName(String name) {
+		if (!name.contains(",")) {
+			return "function0";
+		}
+		List<String> names = new ArrayList<>();
+		for (int i = 0; i <= StringUtils.countOccurrencesOf(name, ","); i++) {
+			names.add("function" + i);
+		}
+		return StringUtils.collectionToDelimitedString(names, "|");
+	}
+
+	public static String functionName(int value) {
+		return "function" + value;
 	}
 }
