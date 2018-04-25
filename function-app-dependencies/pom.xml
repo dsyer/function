@@ -31,8 +31,10 @@
 
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-function-stream</artifactId>
+				<artifactId>spring-cloud-function-dependencies</artifactId>
 				<version>${spring.cloud.function.version}</version>
+				<scope>import</scope>
+				<type>pom</type>
 			</dependency>
 			<dependency>
 				<groupId>io.projectreactor</groupId>
